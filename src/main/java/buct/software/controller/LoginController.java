@@ -26,12 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author 高谦
- * 登录功能实现
- * 特别注意，这里不可以配置拦截。
- * 网站如果登录页面都需要已登录的用户才可以看到的话，那就很荒谬了。
- */
-
+* @Author WangBeiBei
+* @description 登录控制
+*/
 @Controller
 public class LoginController {
     final
@@ -161,7 +158,7 @@ public class LoginController {
         } else {
             // 查询详细保存在session 中，也就是说登录的是一个学生的话，
             // 还要保存学生的信息，如果是一个老师，要保存一个老师的信息
-            if (Constant.normal != user.getStatus()) {
+            if (!Constant.normal.equals(user.getStatus())) {
                 paraMap.put("error_msg", "用户已冻结，请联系教务管理员");
                 return platform.equals("mobile")?"MobileLogin":"login";
             }
