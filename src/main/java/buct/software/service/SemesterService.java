@@ -39,10 +39,8 @@ public class SemesterService {
         }
         return semesterList;
     }
-
     public List<Semester> getSemesterDomain() {
-        List<Semester> all = semesterDao.getAll();
-        return all;
+        return semesterDao.getAll();
     }
 
     /**
@@ -56,20 +54,8 @@ public class SemesterService {
         Semester parm=new Semester();
         parm.setStart(start.toString());
         parm.setSemester(semester.toString());
-        Semester res=semesterDao.getSemesterByStartAndSemester(parm);
-        return res;
+        return semesterDao.getSemesterByStartAndSemester(parm);
     }
-
-    /**
-     * @author 王艺琳
-     * @param semesterId  学期id
-     * @return
-     */
-    public Semester getSemesterById(Integer semesterId) {
-        return  semesterDao.getSemesterById(semesterId);
-    }
-
-
     public void addSemester(Semester semester){
         semesterDao.insertSemester(semester);
     }

@@ -3,17 +3,21 @@ package buct.software.controller;
 import buct.software.domain.Student;
 import buct.software.domain.Teacher;
 import buct.software.domain.User;
+import buct.software.domain.norm.Constant;
 import buct.software.service.*;
 import buct.software.utils.UserAgentParser;
 import buct.software.views.SelectCourseView;
 import buct.software.views.StudentGradeIndexView;
 
 import buct.software.views.TeaCourseView;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import sun.security.provider.MD5;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -27,22 +31,36 @@ import java.util.Map;
  * 特别注意，这里不可以配置拦截。
  * 网站如果登录页面都需要已登录的用户才可以看到的话，那就很荒谬了。
  */
+
 @Controller
 public class LoginController {
-    @Autowired
+    final
     UserService userService;
-    @Autowired
+    final
     StudentService studentService;
-    @Autowired
+    final
     TeacherService teacherService;
-    @Autowired
+    final
     SelectCourseService selectCourseService;
-    @Autowired
+    final
     SemesterService semesterService;
-    @Autowired
+    final
     SchedulingService schedulingService;
-    @Autowired
+    final
     CollegeService collegeService;
+    final
+    Environment environment;
+
+    public LoginController(UserService userService, StudentService studentService, TeacherService teacherService, SelectCourseService selectCourseService, SemesterService semesterService, SchedulingService schedulingService, CollegeService collegeService, Environment environment) {
+        this.userService = userService;
+        this.studentService = studentService;
+        this.teacherService = teacherService;
+        this.selectCourseService = selectCourseService;
+        this.semesterService = semesterService;
+        this.schedulingService = schedulingService;
+        this.collegeService = collegeService;
+        this.environment = environment;
+    }
 
     /**
      * 登录页面网址，请求这个地址用于展现登录页面
@@ -57,7 +75,7 @@ public class LoginController {
         Object userInfo = session.getAttribute("user");
         Integer semesterId = semesterService.getCurrentSemesterId();
 
-        /**
+        /*
          * 获取当前的用户使用的是什么设备。
          */
         String useragent = request.getHeader("User-Agent");
@@ -88,7 +106,7 @@ public class LoginController {
             if (type == 1) {
                 int tno = user.getAccount();
                 List<TeaCourseView> teaCourseViews = schedulingService.getCourseInfoByTno(tno);
-                session.setAttribute("CourseTable",teaCourseViews);
+                session.setAttribute("CourseTable", teaCourseViews);
 
                 parmMap.put("courseTable", teaCourseViews);//课表
                 Teacher teacher = teacherService.getTeacherByTno(tno);
@@ -100,7 +118,7 @@ public class LoginController {
                     return "MobileTeacherHome";
                 return "teacher";
             }
-            if(type==2){
+            if (type == 2) {
                 if (platform.equals("mobile")) {
                     return "redirect:/GoMobileHomePage";
                 } else {
@@ -124,7 +142,7 @@ public class LoginController {
                         @RequestParam("password") String password) {
 
 
-        /**
+        /*
          * 获取当前的用户使用的是什么设备。
          */
         String useragent = request.getHeader("User-Agent");
@@ -132,13 +150,10 @@ public class LoginController {
         String platform = userAgentParser.getPlatform();
 
 
-
-        HttpSession session=request.getSession();
-        User user=userService.LoginFun(account,password);
-        if(user==null){
-            paraMap.put("error_msg","用户名或者密码错误，请重新输入");
-
-
+        HttpSession session = request.getSession();
+        User user = userService.LoginFun(account, DigestUtils.md5DigestAsHex((environment.getProperty("password.salt") + password).getBytes()));
+        if (user == null) {
+            paraMap.put("error_msg", "用户名或者密码错误，请重新输入");
             if (platform.equals("mobile"))
                 return "MobileLogin";
 
@@ -146,6 +161,10 @@ public class LoginController {
         } else {
             // 查询详细保存在session 中，也就是说登录的是一个学生的话，
             // 还要保存学生的信息，如果是一个老师，要保存一个老师的信息
+            if (Constant.normal != user.getStatus()) {
+                paraMap.put("error_msg", "用户已冻结，请联系教务管理员");
+                return platform.equals("mobile")?"MobileLogin":"login";
+            }
             boolean error = false;
             if (user.getType() == 0) {
                 // 是一个学生

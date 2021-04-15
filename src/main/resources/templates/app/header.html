@@ -3,7 +3,7 @@
 <!--用于引入css js 等静态资源的模板块-->
 <head th:fragment="static">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>盗版教务管理系统</title>
+    <title>管理系统</title>
     <script type="text/javascript" src="js/selectcourse/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/selectcourse/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="css/selectcourse/zftal-ui.css" />
@@ -16,8 +16,8 @@
     <div class="container">
         <div class="navbar-header">
             <a class="navbar-brand logo_2" href="">
-                <img src="images/logo_jw_w.png" style="margin-top:-3px" />
-                <span id="xtmc">盗版教务管理系统&nbsp;&nbsp;
+                <img src="images/logo_jw_w.png" style="margin-top:-3px;width: 40px" />
+                <span id="xtmc">管理系统&nbsp;&nbsp;
                     <span th:if="${userinfo.type}==0"> 学生端</span>
                     <span th:if="${userinfo.type}==1"> 教师端</span>
                     <span th:if="${userinfo.type}==2"> 后台系统</span>
